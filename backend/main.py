@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from routes.news import router as news_router
 from routes.jobs import router as jobs_router
 from routes.github import router as github_router
+from routes.analyze import router as analyze_router
 
 app = FastAPI()
 
@@ -18,6 +19,7 @@ app.add_middleware(
 app.include_router(news_router)
 app.include_router(jobs_router)
 app.include_router(github_router)
+app.include_router(analyze_router)
 
 
 @app.get("/")
