@@ -15,7 +15,7 @@ async def fetch_company_news(company_name: str) -> dict:
         return {"articles": [], "error": "NEWS_API_KEY not configured"}
 
     params = {
-        "q": company_name,
+        "q": f'"{company_name}"',
         "sortBy": "publishedAt",
         "language": "en",
         "pageSize": 10,
