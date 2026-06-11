@@ -2,17 +2,28 @@ from fastapi import APIRouter
 import httpx
 from datetime import datetime, timezone, timedelta
 from collections import Counter
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 
 router = APIRouter(prefix="/github")
 
-GITHUB_HEADERS = {
-    "Accept": "application/vnd.github+json",
-    "User-Agent": "competitive-intel-tool",
-}
+
+def _build_headers() -> dict:
+    headers = {
+        "Accept": "application/vnd.github+json",
+        "User-Agent": "competitive-intel-tool",
+    }
+    if GITHUB_TOKEN:
+        headers["Authorization"] = f"Bearer {GITHUB_TOKEN}"
+    return headers
 
 
 async def fetch_github_intel(company_name: str) -> dict:
-    async with httpx.AsyncClient(headers=GITHUB_HEADERS, timeout=15.0) as client:
+    async with httpx.AsyncClient(headers=_build_headers(), timeout=15.0) as client:
         # Step 1 — find org
         try:
             resp = await client.get(
