@@ -1,4 +1,4 @@
-# Competitive Intelligence Tool
+# Dossier
 
 A full-stack tool for gathering real-time competitive intelligence on any company — news coverage, job postings, and GitHub activity — in one place.
 
