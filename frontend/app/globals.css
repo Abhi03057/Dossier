@@ -1,26 +1,156 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
+/* ── Font wiring: Next.js CSS vars → Tailwind utilities ── */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-serif: var(--font-newsreader);
+  --font-sans:  var(--font-geist-sans);
+  --font-mono:  var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ── Design tokens ── */
+:root {
+  /* Warm neutral ramp */
+  --paper:        #F7F6F3;
+  --paper-sunk:   #F1EFEA;
+  --surface:      #FFFFFF;
+  --surface-2:    #FBFAF8;
+
+  --ink:          #1A1A1A;
+  --ink-2:        #6B6B6B;
+  --ink-3:        #94918A;
+  --ink-4:        #B8B4AC;
+
+  --line:         #E5E3DE;
+  --line-soft:    #EFEDE8;
+  --line-strong:  #D8D5CE;
+
+  /* Indigo accent */
+  --accent:        #4F46E5;
+  --accent-strong: #4338CA;
+  --accent-soft:   #6366F1;
+  --accent-tint:   #EEEDFB;
+  --accent-wash:   #F5F4FE;
+
+  /* Semantic signals */
+  --positive:      #15803D;
+  --positive-tint: #E5F0E8;
+  --negative:      #B4321F;
+  --negative-tint: #F6E7E3;
+  --caution:       #B45309;
+  --caution-tint:  #FBF0DE;
+
+  /* Elevation — warm-tinted, low contrast */
+  --shadow-sm: 0 1px 2px rgba(43,38,28,.04), 0 1px 1px rgba(43,38,28,.03);
+  --shadow-md: 0 1px 2px rgba(43,38,28,.04), 0 4px 12px rgba(43,38,28,.05);
+  --shadow-lg: 0 2px 4px rgba(43,38,28,.05), 0 12px 28px rgba(43,38,28,.08);
+
+  /* Motion */
+  --ease-out:   cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-fast:   140ms;
+  --dur-base:   220ms;
+  --dur-slow:   300ms;
 }
 
+/* ── Base ── */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--accent-tint);
+  color: var(--accent-strong);
+}
+
+/* ── Animation ── */
+@keyframes ds-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.ds-fade-in {
+  animation: ds-fade-in var(--dur-slow) var(--ease-out) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ds-fade-in { animation: none; }
+}
+
+/* ── Loading bar animation ── */
+@keyframes ds-load-slide {
+  0%   { transform: translateX(-110%); }
+  100% { transform: translateX(360%); }
+}
+
+@keyframes ds-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Dark theme token overrides ── */
+[data-theme="dark"] {
+  /* Backgrounds */
+  --paper:        #0a0a0a;
+  --paper-sunk:   #111111;
+  --surface:      #161616;
+  --surface-2:    #1c1c1c;
+
+  /* Text */
+  --ink:          #ededed;
+  --ink-2:        #a1a1a1;
+  --ink-3:        #737373;
+  --ink-4:        #525252;
+
+  /* Borders */
+  --line:         #262626;
+  --line-soft:    #1f1f1f;
+  --line-strong:  #404040;
+
+  /* Indigo accent — slightly brighter on dark */
+  --accent:        #6366f1;
+  --accent-strong: #818cf8;
+  --accent-soft:   #a5b4fc;
+  --accent-tint:   rgba(99,102,241,0.14);
+  --accent-wash:   rgba(99,102,241,0.08);
+
+  /* Signals */
+  --positive:      #4ade80;
+  --positive-tint: rgba(74,222,128,0.12);
+  --negative:      #f87171;
+  --negative-tint: rgba(248,113,113,0.12);
+  --caution:       #fbbf24;
+  --caution-tint:  rgba(251,191,36,0.12);
+
+  /* Elevation */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.3), 0 1px 1px rgba(0,0,0,.25);
+  --shadow-md: 0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.35);
+  --shadow-lg: 0 2px 4px rgba(0,0,0,.4), 0 12px 32px rgba(0,0,0,.5);
+}
+
+/* Smooth theme transition on everything except images */
+*, *::before, *::after {
+  transition-property: background-color, border-color, color, box-shadow;
+  transition-duration: 200ms;
+  transition-timing-function: ease;
+}
+img, svg, video { transition: none; }
+
+/* ── Hover utilities (used in Server Components where event handlers are banned) ── */
+.hover-nav-link {
+  transition: border-color 140ms ease, color 140ms ease;
+}
+.hover-nav-link:hover {
+  border-color: var(--line-strong) !important;
+  color: var(--ink) !important;
+}
+
+.hover-pill {
+  transition: all 140ms ease;
+}
+.hover-pill:hover {
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+  background: var(--accent-wash) !important;
 }

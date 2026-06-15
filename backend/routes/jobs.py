@@ -54,6 +54,14 @@ async def _fetch_google_jobs(client: httpx.AsyncClient, company_name: str) -> li
     for j in raw_jobs:
         ext = j.get("detected_extensions", {})
         loc, inferred = _normalize_location(j.get("location"))
+        # Try to get an apply link from related_links or apply_options
+        related = j.get("related_links", [])
+        apply_opts = j.get("apply_options", [])
+        link = None
+        if related:
+            link = related[0].get("link")
+        elif apply_opts:
+            link = apply_opts[0].get("link")
         jobs.append({
             "title": j.get("title"),
             "company_name": j.get("company_name"),
@@ -63,6 +71,7 @@ async def _fetch_google_jobs(client: httpx.AsyncClient, company_name: str) -> li
             "description": (j.get("description") or "")[:300],
             "schedule_type": ext.get("schedule_type"),
             "salary": ext.get("salary"),
+            "link": link,
         })
     return jobs
 
@@ -105,6 +114,7 @@ async def _fetch_linkedin_jobs(client: httpx.AsyncClient, company_name: str) -> 
             "description": snippet[:300],
             "schedule_type": None,
             "salary": None,
+            "link": r.get("link"),
         })
     return jobs
 
@@ -139,10 +149,11 @@ async def _fetch_google_careers(client: httpx.AsyncClient, company_name: str) ->
             "company_name": company_name,
             "location": loc,
             "location_inferred": inferred,
-            "via": "See listing",
+            "via": r.get("displayed_link", "See listing"),
             "description": snippet[:300],
             "schedule_type": None,
             "salary": None,
+            "link": r.get("link"),
         })
     return jobs
 
@@ -188,6 +199,7 @@ async def get_company_jobs(company_name: str):
             "via": j["via"],
             "description": j["description"],
             "schedule_type": j["schedule_type"],
+            "link": j.get("link"),
         }
         for j in jobs
     ]

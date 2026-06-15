@@ -75,6 +75,7 @@ Generate a JSON brief with exactly these fields:
   "growth_signals": ["list of 3 positive growth indicators"],
   "risk_signals": ["list of 2-3 potential concerns or risks"],
   "competitors": ["list of 4-5 likely competitors"],
+  "candidate_tips": ["list of 3-4 practical, specific tips for a candidate applying to this company — based on their tech_stack, hiring_trends, and growth_signals. Examples: 'Highlight experience with Rust or embedded C given their firmware-heavy GitHub activity', 'Emphasise EV/battery domain projects given their manufacturing expansion'. Make each tip concrete and actionable."],
   "intelligence_score": 8
 }}"""
 
