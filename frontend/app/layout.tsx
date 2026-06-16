@@ -33,6 +33,7 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${newsreader.variable} ${geist.variable} ${geistMono.variable} h-full`}
+      suppressHydrationWarning
     >
       <head>
         {/* Prevent flash of wrong theme on initial load */}

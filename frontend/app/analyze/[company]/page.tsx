@@ -268,10 +268,10 @@ export default function AnalyzePage() {
           position: "sticky",
           top: 0,
           zIndex: 50,
-          background: "rgba(247,246,243,0.88)",
-          backdropFilter: "blur(12px)",
-          WebkitBackdropFilter: "blur(12px)",
-          borderBottom: "1px solid var(--line)",
+          background: "var(--nav-bg)",
+          backdropFilter: "blur(14px)",
+          WebkitBackdropFilter: "blur(14px)",
+          borderBottom: "1px solid var(--nav-border)",
         }}
       >
         <div

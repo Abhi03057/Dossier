@@ -64,10 +64,10 @@ export default function Home() {
           position: "sticky",
           top: 0,
           zIndex: 50,
-          background: "rgba(247,246,243,0.88)",
-          backdropFilter: "blur(12px)",
-          WebkitBackdropFilter: "blur(12px)",
-          borderBottom: "1px solid var(--line)",
+          background: "var(--nav-bg)",
+          backdropFilter: "blur(14px)",
+          WebkitBackdropFilter: "blur(14px)",
+          borderBottom: "1px solid var(--nav-border)",
         }}
       >
         <div
@@ -238,12 +238,12 @@ export default function Home() {
                     fontFamily: "var(--font-geist-sans), sans-serif",
                     fontSize: "12px",
                     fontWeight: 500,
-                    color: "var(--ink-2)",
+                    color: "var(--ink-3)",
                     textDecoration: "none",
                     padding: "4px 10px",
                     border: "1px solid var(--line)",
                     borderRadius: "9999px",
-                    background: "var(--surface)",
+                    background: "transparent",
                   }}
                 >
                   {name}
@@ -393,9 +393,8 @@ export default function Home() {
       {/* ── How it works ── */}
       <section
         style={{
-          background: "var(--surface)",
+          background: "var(--paper)",
           borderTop: "1px solid var(--line)",
-          borderBottom: "1px solid var(--line)",
           padding: "64px 24px",
         }}
       >
@@ -436,8 +435,10 @@ export default function Home() {
                 style={{
                   animationDelay: `${i * 80}ms`,
                   padding: "28px",
+                  background: "var(--surface)",
                   border: "1px solid var(--line)",
                   borderRadius: "12px",
+                  boxShadow: "var(--shadow-sm)",
                   display: "flex",
                   flexDirection: "column",
                   gap: "14px",
@@ -448,7 +449,8 @@ export default function Home() {
                     fontFamily: "var(--font-newsreader), Georgia, serif",
                     fontSize: "38px",
                     fontWeight: 600,
-                    color: "var(--accent-tint)",
+                    color: "var(--accent)",
+                    opacity: 0.2,
                     lineHeight: 1,
                     letterSpacing: "-0.03em",
                   }}
@@ -484,7 +486,7 @@ export default function Home() {
       </section>
 
       {/* ── What's inside ── */}
-      <section style={{ padding: "64px 24px", background: "var(--accent-wash)" }}>
+      <section style={{ padding: "64px 24px", background: "var(--paper)", borderTop: "1px solid var(--line)" }}>
         <div style={{ maxWidth: "1080px", margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: "48px" }}>
             <p
@@ -587,7 +589,7 @@ export default function Home() {
       <section
         style={{
           padding: "72px 24px",
-          background: "var(--surface)",
+          background: "var(--paper)",
           borderTop: "1px solid var(--line)",
           textAlign: "center",
         }}
