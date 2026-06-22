@@ -15,6 +15,7 @@ app.add_middleware(
         "http://localhost:3000",
         "https://dossier.vercel.app",
         "https://dossier-frontend.vercel.app",
+        "https://dossier-nine-plum.vercel.app",
     ],
     allow_credentials=True,
     allow_methods=["*"],
