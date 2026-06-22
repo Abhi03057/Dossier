@@ -649,13 +649,57 @@ export default function AnalyzePage() {
               marginTop: 0,
             }}
           >
-            Click any competitor to generate their brief.
+            Click a competitor for their brief, or &ldquo;vs&rdquo; to compare head-to-head.
           </p>
-          <TechChips
-            items={brief.competitors}
-            variant="competitor"
-            onClickItem={(c) => router.push(`/analyze/${encodeURIComponent(c)}`)}
-          />
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+            {brief.competitors.map((c) => (
+              <div
+                key={c}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  borderRadius: "9999px",
+                  border: "1px solid var(--line)",
+                  background: "var(--paper-sunk, #F1EFEA)",
+                  overflow: "hidden",
+                }}
+              >
+                <button
+                  onClick={() => router.push(`/analyze/${encodeURIComponent(c)}`)}
+                  style={{
+                    fontFamily: "var(--font-geist-sans), sans-serif",
+                    fontSize: "13px",
+                    fontWeight: 500,
+                    color: "var(--ink-2)",
+                    background: "transparent",
+                    border: "none",
+                    padding: "6px 12px",
+                    cursor: "pointer",
+                  }}
+                >
+                  {c}
+                </button>
+                <button
+                  onClick={() => router.push(`/compare/${encodeURIComponent(data.company)}/${encodeURIComponent(c)}`)}
+                  title={`Compare ${data.company} vs ${c}`}
+                  style={{
+                    fontFamily: "var(--font-geist-mono), monospace",
+                    fontSize: "11px",
+                    fontWeight: 600,
+                    color: "var(--accent)",
+                    background: "var(--accent-tint)",
+                    border: "none",
+                    borderLeft: "1px solid var(--line)",
+                    padding: "6px 10px",
+                    cursor: "pointer",
+                    height: "100%",
+                  }}
+                >
+                  vs
+                </button>
+              </div>
+            ))}
+          </div>
         </Section>
 
         {/* ── Candidate Tips ── */}

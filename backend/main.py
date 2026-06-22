@@ -5,6 +5,7 @@ from routes.jobs import router as jobs_router
 from routes.github import router as github_router
 from routes.analyze import router as analyze_router
 from routes.match import router as match_router
+from routes.compare import router as compare_router
 
 app = FastAPI()
 
@@ -22,6 +23,7 @@ app.include_router(jobs_router)
 app.include_router(github_router)
 app.include_router(analyze_router)
 app.include_router(match_router)
+app.include_router(compare_router)
 
 
 @app.get("/")

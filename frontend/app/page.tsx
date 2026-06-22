@@ -218,6 +218,26 @@ export default function Home() {
 
           <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
             <SearchBar />
+            <a
+              href="/compare"
+              className="hover-nav-link"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                fontFamily: "var(--font-geist-sans), sans-serif",
+                fontSize: "13px",
+                fontWeight: 500,
+                color: "var(--ink-3)",
+                textDecoration: "none",
+                width: "fit-content",
+              }}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M8 3 4 7l4 4M4 7h16M16 21l4-4-4-4M20 17H4" />
+              </svg>
+              Compare two companies instead
+            </a>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", paddingLeft: "2px" }}>
               <span
                 style={{
