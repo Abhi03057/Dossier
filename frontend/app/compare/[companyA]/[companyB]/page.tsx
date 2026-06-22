@@ -180,7 +180,7 @@ export default function ComparePage() {
     setError(null);
     setData(null);
 
-    fetch(`http://localhost:8000/compare/${encodeURIComponent(companyA)}/${encodeURIComponent(companyB)}`)
+    fetch(`https://dossier-backend-6u7y.onrender.com/compare/${encodeURIComponent(companyA)}/${encodeURIComponent(companyB)}`)
       .then((res) => {
         if (!res.ok) throw new Error(`API error: ${res.status}`);
         return res.json();

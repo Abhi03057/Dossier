@@ -162,7 +162,7 @@ export default function AnalyzePage() {
     setMatchError(null);
     setMatchData(null);
 
-    fetch(`http://localhost:8000/match/${encodeURIComponent(username)}/${encodeURIComponent(company)}`)
+    fetch(`https://dossier-backend-6u7y.onrender.com/match/${encodeURIComponent(username)}/${encodeURIComponent(company)}`)
       .then((res) => {
         if (res.status === 404) throw new Error(`GitHub user "${username}" not found`);
         if (!res.ok) throw new Error(`API error: ${res.status}`);
@@ -191,11 +191,11 @@ export default function AnalyzePage() {
     const encoded = encodeURIComponent(company);
 
     Promise.all([
-      fetch(`http://localhost:8000/analyze/${encoded}`).then((res) => {
+      fetch(`https://dossier-backend-6u7y.onrender.com/analyze/${encoded}`).then((res) => {
         if (!res.ok) throw new Error(`API error: ${res.status}`);
         return res.json();
       }),
-      fetch(`http://localhost:8000/jobs/${encoded}`)
+      fetch(`https://dossier-backend-6u7y.onrender.com/jobs/${encoded}`)
         .then((res) => res.json())
         .catch(() => ({ jobs: [] })),
     ])
