@@ -5,23 +5,33 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import LoadingState from "@/components/LoadingState";
 import ScoreBadge from "@/components/ScoreBadge";
-import SignalCard from "@/components/SignalCard";
+import SignalCard, { SignalItem } from "@/components/SignalCard";
 import TechChips from "@/components/TechChips";
 import StatCard from "@/components/StatCard";
 import JobCard from "@/components/JobCard";
+import NewsArticleCard from "@/components/NewsArticleCard";
+import MatchCard from "@/components/MatchCard";
 import SearchBar from "@/components/SearchBar";
 import ThemeToggle from "@/components/ThemeToggle";
 
 interface Brief {
   summary: string;
   tech_stack: string[];
-  hiring_trends: string[];
-  recent_developments: string[];
-  growth_signals: string[];
-  risk_signals: string[];
+  hiring_trends: SignalItem[];
+  recent_developments: SignalItem[];
+  growth_signals: SignalItem[];
+  risk_signals: SignalItem[];
   competitors: string[];
-  candidate_tips: string[];
+  candidate_tips: SignalItem[];
   intelligence_score: number;
+}
+
+interface NewsArticle {
+  title: string;
+  description: string | null;
+  url: string;
+  publishedAt: string;
+  source: string | null;
 }
 
 interface RawData {
@@ -30,6 +40,7 @@ interface RawData {
   github_found: boolean;
   github_org: string | null;
   top_languages: string[];
+  news_articles: NewsArticle[];
 }
 
 interface AnalysisResult {
@@ -46,6 +57,26 @@ interface Job {
   description: string;
   schedule_type: string | null;
   link?: string | null;
+}
+
+interface MatchResult {
+  github_username: string;
+  company: string;
+  error?: string;
+  developer?: {
+    top_languages: string[];
+    top_projects: { name: string; description: string | null; language: string | null; stars: number }[];
+    recent_activity: number;
+  };
+  match?: {
+    match_score: number;
+    matching_skills: string[];
+    gap_skills: string[];
+    standout_projects: string[];
+    learning_path: string[];
+    verdict: string;
+    match_level: "Strong" | "Moderate" | "Weak";
+  };
 }
 
 function Overline({ num, children }: { num: string; children: React.ReactNode }) {
@@ -111,6 +142,45 @@ export default function AnalyzePage() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showAllNews, setShowAllNews] = useState(false);
+
+  const [githubUsername, setGithubUsername] = useState("");
+  const [matchData, setMatchData] = useState<MatchResult | null>(null);
+  const [matchLoading, setMatchLoading] = useState(false);
+  const [matchError, setMatchError] = useState<string | null>(null);
+
+  const handleMatch = () => {
+    // Allow pasting a full profile URL ("https://github.com/user/") —
+    // extract just the username so it doesn't break the route's path params.
+    const username = githubUsername
+      .trim()
+      .replace(/^(https?:\/\/)?(www\.)?github\.com\//i, "")
+      .replace(/\/+$/, "");
+    if (!username) return;
+
+    setMatchLoading(true);
+    setMatchError(null);
+    setMatchData(null);
+
+    fetch(`http://localhost:8000/match/${encodeURIComponent(username)}/${encodeURIComponent(company)}`)
+      .then((res) => {
+        if (res.status === 404) throw new Error(`GitHub user "${username}" not found`);
+        if (!res.ok) throw new Error(`API error: ${res.status}`);
+        return res.json();
+      })
+      .then((result: MatchResult) => {
+        if (result.error) {
+          setMatchError(result.error);
+        } else {
+          setMatchData(result);
+        }
+        setMatchLoading(false);
+      })
+      .catch((err) => {
+        setMatchError(err.message ?? "Something went wrong");
+        setMatchLoading(false);
+      });
+  };
 
   const fetchData = () => {
     setLoading(true);
@@ -474,6 +544,76 @@ export default function AnalyzePage() {
             What moved in roughly the last 90 days.
           </p>
           <SignalCard title="Recent developments" items={brief.recent_developments} variant="accent" />
+
+          {raw.news_articles?.length > 0 && (
+            <div style={{ marginTop: "24px" }}>
+              <p
+                style={{
+                  fontFamily: "var(--font-geist-mono), monospace",
+                  fontSize: "10px",
+                  fontWeight: 500,
+                  letterSpacing: "0.12em",
+                  textTransform: "uppercase",
+                  color: "var(--ink-3)",
+                  marginBottom: "12px",
+                }}
+              >
+                All coverage · {raw.news_articles.length} articles
+              </p>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(3, 1fr)",
+                  gap: "12px",
+                }}
+              >
+                {(showAllNews ? raw.news_articles : raw.news_articles.slice(0, 6)).map(
+                  (article, i) => (
+                    <NewsArticleCard key={`${article.url}-${i}`} article={article} />
+                  )
+                )}
+              </div>
+              {raw.news_articles.length > 6 && (
+                <button
+                  onClick={() => setShowAllNews((v) => !v)}
+                  style={{
+                    marginTop: "16px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    fontFamily: "var(--font-geist-sans), sans-serif",
+                    fontSize: "13px",
+                    fontWeight: 500,
+                    color: "var(--accent)",
+                    background: "transparent",
+                    border: "none",
+                    cursor: "pointer",
+                    padding: 0,
+                  }}
+                >
+                  {showAllNews
+                    ? "Show fewer articles"
+                    : `View ${raw.news_articles.length - 6} more articles`}
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    style={{
+                      transform: showAllNews ? "rotate(180deg)" : "none",
+                      transition: "transform 160ms ease",
+                    }}
+                  >
+                    <path d="m6 9 6 6 6-6" />
+                  </svg>
+                </button>
+              )}
+            </div>
+          )}
         </Section>
 
         {/* ── Hiring Trends ── */}
@@ -536,6 +676,114 @@ export default function AnalyzePage() {
             <SignalCard title="Candidate tips" items={brief.candidate_tips} variant="candidate" />
           </Section>
         )}
+
+        {/* ── GitHub Profile Match ── */}
+        <Section delay={520}>
+          <Overline num="Just for you">GitHub profile match</Overline>
+          <p
+            style={{
+              fontFamily: "var(--font-geist-sans), sans-serif",
+              fontSize: "14px",
+              color: "var(--ink-3)",
+              marginBottom: "20px",
+              marginTop: 0,
+            }}
+          >
+            See how your GitHub activity stacks up against {data.company}&apos;s tech stack and hiring signals.
+          </p>
+
+          <div
+            style={{
+              display: "flex",
+              gap: "10px",
+              maxWidth: "480px",
+              marginBottom: "24px",
+            }}
+          >
+            <input
+              type="text"
+              value={githubUsername}
+              onChange={(e) => setGithubUsername(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleMatch();
+              }}
+              placeholder="Your GitHub username, e.g. octocat"
+              style={{
+                flex: 1,
+                padding: "11px 14px",
+                fontFamily: "var(--font-geist-sans), sans-serif",
+                fontSize: "14px",
+                color: "var(--ink)",
+                background: "var(--surface)",
+                border: "1.5px solid var(--line)",
+                borderRadius: "9px",
+                outline: "none",
+              }}
+            />
+            <button
+              onClick={handleMatch}
+              disabled={!githubUsername.trim() || matchLoading}
+              style={{
+                padding: "11px 20px",
+                fontFamily: "var(--font-geist-sans), sans-serif",
+                fontSize: "14px",
+                fontWeight: 500,
+                color: githubUsername.trim() ? "#fff" : "var(--ink-3)",
+                background: githubUsername.trim() ? "var(--accent)" : "var(--line)",
+                border: "none",
+                borderRadius: "9px",
+                cursor: githubUsername.trim() && !matchLoading ? "pointer" : "default",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {matchLoading ? "Analyzing…" : "Analyze My Fit"}
+            </button>
+          </div>
+
+          {matchLoading && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                fontFamily: "var(--font-geist-sans), sans-serif",
+                fontSize: "13px",
+                color: "var(--ink-3)",
+              }}
+            >
+              <span
+                style={{
+                  width: "16px",
+                  height: "16px",
+                  borderRadius: "50%",
+                  border: "2px solid var(--accent-tint)",
+                  borderTopColor: "var(--accent)",
+                  animation: "ds-spin 0.7s linear infinite",
+                  display: "inline-block",
+                }}
+              />
+              Comparing your GitHub profile against {data.company}…
+            </div>
+          )}
+
+          {matchError && (
+            <div
+              style={{
+                padding: "14px 16px",
+                background: "var(--negative-tint)",
+                border: "1px solid var(--negative)",
+                borderRadius: "9px",
+                fontFamily: "var(--font-geist-sans), sans-serif",
+                fontSize: "13px",
+                color: "var(--negative)",
+              }}
+            >
+              {matchError}
+            </div>
+          )}
+
+          {matchData?.match && <MatchCard match={matchData.match} />}
+        </Section>
 
         {/* ── Footer ── */}
         <div

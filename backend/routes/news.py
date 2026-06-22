@@ -15,7 +15,7 @@ async def fetch_company_news(company_name: str) -> dict:
         return {"articles": [], "error": "NEWS_API_KEY not configured"}
 
     params = {
-        "q": f'"{company_name}"',
+        "qInTitle": f'"{company_name}"',
         "sortBy": "publishedAt",
         "language": "en",
         "pageSize": 10,
@@ -40,6 +40,17 @@ async def fetch_company_news(company_name: str) -> dict:
             }
             for a in data.get("articles", [])
         ]
+
+        # NewsAPI matching is case-insensitive, so common-word company names
+        # (e.g. "Stripe") pick up generic lowercase usage ("candy stripe",
+        # package version strings). Require the company name to appear with
+        # its given capitalization in the title, since real coverage of a
+        # company writes its name as a proper noun. Fall back to the
+        # unfiltered list if this would otherwise drop every result.
+        cased_matches = [a for a in articles if company_name in (a["title"] or "")]
+        if cased_matches:
+            articles = cased_matches
+
         return {"articles": articles}
 
     except httpx.HTTPStatusError as e:

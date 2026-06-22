@@ -4,6 +4,7 @@ from routes.news import router as news_router
 from routes.jobs import router as jobs_router
 from routes.github import router as github_router
 from routes.analyze import router as analyze_router
+from routes.match import router as match_router
 
 app = FastAPI()
 
@@ -20,6 +21,7 @@ app.include_router(news_router)
 app.include_router(jobs_router)
 app.include_router(github_router)
 app.include_router(analyze_router)
+app.include_router(match_router)
 
 
 @app.get("/")

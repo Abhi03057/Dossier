@@ -1,8 +1,14 @@
 type Tone = "positive" | "negative" | "caution" | "accent" | "neutral" | "candidate";
 
+export interface SignalItem {
+  text: string;
+  url?: string | null;
+  source?: string | null;
+}
+
 interface SignalCardProps {
   title: string;
-  items: string[];
+  items: (string | SignalItem)[];
   variant?: Tone;
 }
 
@@ -38,6 +44,11 @@ const toneConfig: Record<Tone, { iconBg: string; iconColor: string; icon: string
     icon: "M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75",
   },
 };
+
+function normalizeItem(item: string | SignalItem): SignalItem {
+  if (typeof item === "string") return { text: item, url: null, source: null };
+  return item;
+}
 
 export default function SignalCard({ title, items, variant = "neutral" }: SignalCardProps) {
   const cfg = toneConfig[variant];
@@ -97,34 +108,70 @@ export default function SignalCard({ title, items, variant = "neutral" }: Signal
 
       {/* Items */}
       <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "10px" }}>
-        {items.map((item, i) => (
-          <li
-            key={i}
-            style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}
-          >
-            <span
-              style={{
-                width: "6px",
-                height: "6px",
-                borderRadius: "50%",
-                background: cfg.iconColor,
-                opacity: 0.5,
-                marginTop: "7px",
-                flexShrink: 0,
-              }}
-            />
-            <span
-              style={{
-                fontFamily: "var(--font-geist-sans), sans-serif",
-                fontSize: "14px",
-                color: "var(--ink-2)",
-                lineHeight: 1.6,
-              }}
+        {items.map((raw, i) => {
+          const item = normalizeItem(raw);
+          return (
+            <li
+              key={i}
+              style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}
             >
-              {item}
-            </span>
-          </li>
-        ))}
+              <span
+                style={{
+                  width: "6px",
+                  height: "6px",
+                  borderRadius: "50%",
+                  background: cfg.iconColor,
+                  opacity: 0.5,
+                  marginTop: "7px",
+                  flexShrink: 0,
+                }}
+              />
+              <div style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
+                {item.url ? (
+                  <a
+                    href={item.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      fontFamily: "var(--font-geist-sans), sans-serif",
+                      fontSize: "14px",
+                      color: "var(--ink-2)",
+                      lineHeight: 1.6,
+                      textDecoration: "underline",
+                      textDecorationColor: "var(--line-strong)",
+                      textUnderlineOffset: "2px",
+                    }}
+                  >
+                    {item.text}
+                  </a>
+                ) : (
+                  <span
+                    style={{
+                      fontFamily: "var(--font-geist-sans), sans-serif",
+                      fontSize: "14px",
+                      color: "var(--ink-2)",
+                      lineHeight: 1.6,
+                    }}
+                  >
+                    {item.text}
+                  </span>
+                )}
+                {item.source && (
+                  <span
+                    style={{
+                      fontFamily: "var(--font-geist-mono), monospace",
+                      fontSize: "10px",
+                      color: "var(--ink-4)",
+                      letterSpacing: "0.04em",
+                    }}
+                  >
+                    via {item.source}
+                  </span>
+                )}
+              </div>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );

@@ -36,9 +36,11 @@ async def synthesize_intel(
         return {"error": "GROQ_API_KEY not configured"}
 
     # Build context strings
-    articles = news_data.get("articles", [])[:5]
+    articles = news_data.get("articles", [])[:8]
     news_context = "\n".join(
-        f"- {a['title']}: {a.get('description', '')}" for a in articles
+        f"- Title: {a.get('title', '')} | URL: {a.get('url', '')} | "
+        f"Description: {a.get('description', '')}"
+        for a in articles
     ) or "No news data available."
 
     jobs = jobs_data.get("jobs", [])
@@ -66,18 +68,37 @@ JOB POSTINGS:
 GITHUB:
 {github_context}
 
-Generate a JSON brief with exactly these fields:
+Generate a JSON brief with exactly these fields. For every item in
+hiring_trends, recent_developments, growth_signals, risk_signals, and
+candidate_tips, cite where the observation came from so the reader can
+verify it:
 {{
   "summary": "2-3 sentence company overview based on recent activity",
   "tech_stack": ["list of technologies inferred from jobs + github"],
-  "hiring_trends": ["list of 3-4 key observations about their hiring"],
-  "recent_developments": ["list of 3-4 key news highlights"],
-  "growth_signals": ["list of 3 positive growth indicators"],
-  "risk_signals": ["list of 2-3 potential concerns or risks"],
+  "hiring_trends": [
+    {{"text": "observation about their hiring", "source": "job title or 'GitHub' or 'NewsAPI'"}}
+  ],
+  "recent_developments": [
+    {{"text": "news highlight", "url": "the actual article URL from NEWS above, or null if not from a specific article"}}
+  ],
+  "growth_signals": [
+    {{"text": "positive growth indicator", "source": "where this was inferred from, e.g. 'NewsAPI', 'Job postings', 'GitHub activity'"}}
+  ],
+  "risk_signals": [
+    {{"text": "potential concern or risk", "source": "where this was inferred from"}}
+  ],
+  "candidate_tips": [
+    {{"text": "practical, specific tip for a candidate applying to this company — based on tech_stack, hiring_trends, and growth_signals. Make it concrete and actionable.", "source": "'GitHub' or 'Jobs' or 'News'"}}
+  ],
   "competitors": ["list of 4-5 likely competitors"],
-  "candidate_tips": ["list of 3-4 practical, specific tips for a candidate applying to this company — based on their tech_stack, hiring_trends, and growth_signals. Examples: 'Highlight experience with Rust or embedded C given their firmware-heavy GitHub activity', 'Emphasise EV/battery domain projects given their manufacturing expansion'. Make each tip concrete and actionable."],
   "intelligence_score": 8
-}}"""
+}}
+
+hiring_trends should have 3-4 items, recent_developments 5-6 items,
+growth_signals 3 items, risk_signals 2-3 items, candidate_tips 3-4 items.
+Use the exact article URLs given in the NEWS section above for
+recent_developments — do not invent URLs. Cover as many distinct
+articles from the NEWS section as you can in recent_developments."""
 
     response = await asyncio.to_thread(
         _groq.chat.completions.create,
@@ -99,14 +120,41 @@ Generate a JSON brief with exactly these fields:
     raw_text = response.choices[0].message.content.strip()
 
     try:
-        return json.loads(raw_text)
+        brief = json.loads(raw_text)
     except json.JSONDecodeError:
         # Strip any accidental markdown fences and retry
         cleaned = raw_text.removeprefix("```json").removeprefix("```").removesuffix("```").strip()
         try:
-            return json.loads(cleaned)
+            brief = json.loads(cleaned)
         except json.JSONDecodeError:
             return {"error": "Failed to parse Groq response", "raw": raw_text}
+
+    return _normalize_brief(brief)
+
+
+_CITED_FIELDS = ("hiring_trends", "recent_developments", "growth_signals", "risk_signals", "candidate_tips")
+
+
+def _normalize_brief(brief: dict) -> dict:
+    """Ensure every item in the cited fields is {text, url, source}, even if
+    the model returned a plain string."""
+    for field in _CITED_FIELDS:
+        items = brief.get(field)
+        if not isinstance(items, list):
+            continue
+        normalized = []
+        for item in items:
+            if isinstance(item, str):
+                normalized.append({"text": item, "url": None, "source": None})
+            elif isinstance(item, dict):
+                normalized.append({
+                    "text": item.get("text", ""),
+                    "url": item.get("url"),
+                    "source": item.get("source"),
+                })
+            # silently drop anything else malformed
+        brief[field] = normalized
+    return brief
 
 
 @router.get("/{company_name}")
@@ -124,5 +172,6 @@ async def get_intel_brief(company_name: str):
             "github_found": github_data.get("found", False),
             "github_org": github_data.get("github_org"),
             "top_languages": github_data.get("top_languages", []),
+            "news_articles": news_data.get("articles", []),
         },
     }
